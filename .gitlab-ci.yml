@@ -1,0 +1,24 @@
+
+stages:
+  - build
+  - test
+
+bitstream:
+  stage: build
+  script:
+    - env
+    - docker run -t --rm -v $PWD:/home/vivado/project vivado:2018.1 /opt/Xilinx/Vivado/2018.1/bin/vivado -mode tcl -source build.tcl thinpad_top.xpr
+
+  artifacts:
+    paths:
+      - thinpad_top.runs/impl_1/thinpad_top.bit
+
+test_on_cloud:
+  stage: test
+  before_script:
+    - git submodule sync --recursive
+    - git submodule update --init --recursive
+    - pushd Thinpad-Cloud-SDK && pip3 install --user -r requirements.txt && ./setup.py install --user && popd
+  script:
+    - cd Thinpad-Cloud-SDK
+    - ./example.py "$THINPAD_CLOUD_USER" "$THINPAD_CLOUD_PASSWD" ../thinpad_top.runs/impl_1/thinpad_top.bit
