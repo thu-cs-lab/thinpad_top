@@ -46,9 +46,9 @@ time twz ;   // write enable to output in high-Z
 time tow ;   // output active from write end
 time tbw ;   // byte enable low to write end
 
-time UB_n_start_time,LB_n_start_time;
-time write_address1_time,write_data1_time,write_CE_n_start_time1,write_WE_n_start_time1; 
-time write_CE_n_start_time,write_WE_n_start_time,write_address_time,write_data_time;
+time UB_n_start_time=0,LB_n_start_time=0;
+time write_address1_time=0,write_data1_time=0,write_CE_n_start_time1=0,write_WE_n_start_time1=0; 
+time write_CE_n_start_time=0,write_WE_n_start_time=0,write_address_time=0,write_data_time=0;
 time temptaa, temptoe, read_address_add,read_address_oe ;
 
 
@@ -69,13 +69,13 @@ time tbhz ;  // LB_n/UB_n high to output in High-Z
 time tpu ;   // power up time
 time tpd ;   // power down time
 
-time read_address_time,read_CE_n_start_time,read_WE_n_start_time,read_OE_n_start_time;
+time read_address_time,read_CE_n_start_time=0,read_WE_n_start_time=0,read_OE_n_start_time=0;
 
 
 
 // Internal Signal Definition
             // For Write access
-reg   activate_cebar,activate_webar,activate_wecebar;
+reg   activate_cebar=0,activate_webar,activate_wecebar=0;
 reg   initiate_write1,initiate_write2,initiate_write3;
 reg   WE_dly;
 reg   [19:0] Address_write1,Address_write2;
