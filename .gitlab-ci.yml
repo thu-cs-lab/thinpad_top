@@ -15,4 +15,6 @@ bitstream:
   artifacts:
     paths:
       - thinpad_top.runs/impl_1/thinpad_top.bit
+      - thinpad_top.runs/impl_1/runme.log
+      - thinpad_top.runs/synth_1/runme.log
 
