@@ -80,39 +80,6 @@ module thinpad_top(
     output wire video_de           //行数据有效信号，用于区分消隐区
 );
 
-reg [7:0] uart_test;
-reg wrn, rdn;
-assign uart_rdn = rdn;
-assign uart_wrn = wrn;
-assign base_ram_ce_n = 1;
-assign base_ram_oe_n = 1;
-assign base_ram_we_n = 1;
-assign base_ram_data = uart_wrn ? 32'hz : uart_test;
-initial begin
-    rdn = 1;
-    wrn = 1;
-    #100;
-    wrn = 0;
-    uart_test = 'h55;
-    #10;
-    wrn = 1;
-    wait(uart_tsre==0);
-    wait(uart_tsre==1);
-    #10;
-    wrn = 0;
-    uart_test = 'h66;
-    #10;
-    wrn = 1;
-    wait(uart_dataready==1);
-    rdn = 0;
-    #10;
-    rdn = 1;
-    wait(uart_dataready==1);
-    rdn = 0;
-    #10;
-    rdn = 1;
-end
-
 /* =========== Demo code begin =========== */
 
 // PLL分频示例
@@ -144,6 +111,18 @@ always@(posedge clk_10M or posedge reset_of_clk10M) begin
         // Your Code
     end
 end
+
+// 不使用内存、串口时，禁用其使能信号
+assign base_ram_ce_n = 1'b1;
+assign base_ram_oe_n = 1'b1;
+assign base_ram_we_n = 1'b1;
+
+assign ext_ram_ce_n = 1'b1;
+assign ext_ram_oe_n = 1'b1;
+assign ext_ram_we_n = 1'b1;
+
+assign uart_rdn = 1'b1;
+assign uart_wrn = 1'b1;
 
 // 数码管连接关系示意图，dpy1同理
 // p=dpy0[0] // ---a---
