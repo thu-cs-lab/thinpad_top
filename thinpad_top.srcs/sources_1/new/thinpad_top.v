@@ -50,25 +50,28 @@ module thinpad_top(
     output wire flash_we_n,         //Flash写使能信号，低有效
     output wire flash_byte_n,       //Flash 8bit模式选择，低有效。在使用flash的16位模式时请设为1
 
-    //USB 控制器信号，参考 SL811 芯片手册
-    output wire sl811_a0,
-    //inout  wire[7:0] sl811_d,     //USB数据线与网络控制器的dm9k_sd[7:0]共享
-    output wire sl811_wr_n,
-    output wire sl811_rd_n,
-    output wire sl811_cs_n,
-    output wire sl811_rst_n,
-    output wire sl811_dack_n,
-    input  wire sl811_intrq,
-    input  wire sl811_drq_n,
+    //USB+SD 控制器信号，参考 CH376T 芯片手册
+    output wire ch376t_sdi,
+    output wire ch376t_sck,
+    output wire ch376t_cs_n,
+    output wire ch376t_rst,
+    input  wire ch376t_int_n,
+    input  wire ch376t_sdo,
 
-    //网络控制器信号，参考 DM9000A 芯片手册
-    output wire dm9k_cmd,
-    inout  wire[15:0] dm9k_sd,
-    output wire dm9k_iow_n,
-    output wire dm9k_ior_n,
-    output wire dm9k_cs_n,
-    output wire dm9k_pwrst_n,
-    input  wire dm9k_int,
+    //网络交换机信号，参考 KSZ8795 芯片手册及 RGMII 规范
+    input  wire [3:0] eth_rgmii_rd,
+    input  wire eth_rgmii_rx_ctl,
+    input  wire eth_rgmii_rxc,
+    output wire [3:0] eth_rgmii_td,
+    output wire eth_rgmii_tx_ctl,
+    output wire eth_rgmii_txc,
+    output wire eth_rst_n,
+    input  wire eth_int_n,
+
+    input  wire eth_spi_miso,
+    output wire eth_spi_mosi,
+    output wire eth_spi_sck,
+    output wire eth_spi_ss_n,
 
     //图像输出信号
     output wire[2:0] video_red,    //红色像素，3位
