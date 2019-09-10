@@ -99,6 +99,20 @@ pll_example clock_gen
   .clk_in1(clk_50M) // 外部时钟输入
  );
 
+assign eth_rst_n = ~reset_btn;
+// 以太网交换机寄存器配置
+eth_conf conf(
+    .clk(clk_50M),
+    .rst_in_n(locked),
+
+    .eth_spi_miso(eth_spi_miso),
+    .eth_spi_mosi(eth_spi_mosi),
+    .eth_spi_sck(eth_spi_sck),
+    .eth_spi_ss_n(eth_spi_ss_n),
+
+    .done()
+);
+
 reg reset_of_clk10M;
 // 异步复位，同步释放
 always@(posedge clk_10M or negedge locked) begin
