@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 module tb;
 
-wire clk_50M, clk_11M0592;
+wire clk_50M, clk_11M0592, clk_125M, clk_125M_90deg;
 
 reg clock_btn = 0;         //BTN5手动时钟按钮开关，带消抖电路，按下时为1
 reg reset_btn = 0;         //BTN6手动复位按钮开关，带消抖电路，按下时为1
@@ -44,6 +44,10 @@ wire uart_wrn;           //写串口信号，低有效
 wire uart_dataready;     //串口数据准备好
 wire uart_tbre;          //发送数据标志
 wire uart_tsre;          //数据发送完毕标志
+
+wire [3:0] eth_rgmii_rd; //RGMII RX 数据
+wire eth_rgmii_rx_ctl;   //RGMII RX 控制
+wire eth_rgmii_rxc;      //RGMII RX 时钟
 
 //Windows需要注意路径分隔符的转义，例如"D:\\foo\\bar.bin"
 parameter BASE_RAM_INIT_FILE = "/tmp/main.bin"; //BaseRAM初始化文件，请修改为实际的绝对路径
@@ -105,12 +109,17 @@ thinpad_top dut(
     .flash_oe_n(flash_oe_n),
     .flash_ce_n(flash_ce_n),
     .flash_byte_n(flash_byte_n),
-    .flash_we_n(flash_we_n)
+    .flash_we_n(flash_we_n),
+    .eth_rgmii_rd(eth_rgmii_rd),
+    .eth_rgmii_rx_ctl(eth_rgmii_rx_ctl),
+    .eth_rgmii_rxc(eth_rgmii_rxc)
 );
 // 时钟源
 clock osc(
-    .clk_11M0592(clk_11M0592),
-    .clk_50M    (clk_50M)
+    .clk_11M0592   (clk_11M0592),
+    .clk_50M       (clk_50M),
+    .clk_125M      (clk_125M),
+    .clk_125M_90deg(clk_125M_90deg)
 );
 // CPLD 串口仿真模型
 cpld_model cpld(
@@ -222,4 +231,15 @@ initial begin
         ext2.mem_array1[i] = tmp_array[i][0+:8];
     end
 end
+
+// RGMII 仿真模型
+
+rgmii_model rgmii(
+    .clk_125M(clk_125M),
+    .clk_125M_90deg(clk_125M_90deg),
+
+    .rgmii_rd(eth_rgmii_rd),
+    .rgmii_rxc(eth_rgmii_rxc),
+    .rgmii_rx_ctl(eth_rgmii_rx_ctl)
+);
 endmodule

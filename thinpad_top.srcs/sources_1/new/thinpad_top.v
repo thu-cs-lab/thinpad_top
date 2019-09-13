@@ -86,12 +86,14 @@ module thinpad_top(
 /* =========== Demo code begin =========== */
 
 // PLL分频示例
-wire locked, clk_10M, clk_20M;
+wire locked, clk_10M, clk_20M, clk_125M, clk_200M;
 pll_example clock_gen 
  (
   // Clock out ports
   .clk_out1(clk_10M), // 时钟输出1，频率在IP配置界面中设置
   .clk_out2(clk_20M), // 时钟输出2，频率在IP配置界面中设置
+  .clk_out3(clk_125M), // 时钟输出3，频率在IP配置界面中设置
+  .clk_out4(clk_200M), // 时钟输出4，频率在IP配置界面中设置
   // Status and control signals
   .reset(reset_btn), // PLL复位输入
   .locked(locked), // 锁定输出，"1"表示时钟稳定，可作为后级电路复位
@@ -225,6 +227,60 @@ vga #(12, 800, 856, 976, 1040, 600, 637, 643, 666, 1, 1) vga800x600at75 (
     .hsync(video_hsync),
     .vsync(video_vsync),
     .data_enable(video_de)
+);
+
+// 以太网 MAC 配置演示
+wire [7:0] eth_rx_axis_mac_tdata;
+wire eth_rx_axis_mac_tvalid;
+wire eth_rx_axis_mac_tlast;
+wire eth_rx_axis_mac_tuser;
+wire [7:0] eth_tx_axis_mac_tdata = 0;
+wire eth_tx_axis_mac_tvalid = 0;
+wire eth_tx_axis_mac_tlast = 0;
+wire eth_tx_axis_mac_tuser = 0;
+wire eth_tx_axis_mac_tready;
+
+wire eth_rx_mac_aclk;
+wire eth_tx_mac_aclk;
+
+eth_mac eth_mac_inst (
+    .gtx_clk(clk_125M),
+    .refclk(clk_200M),
+
+    .glbl_rstn(eth_rst_n),
+    .rx_axi_rstn(eth_rst_n),
+    .tx_axi_rstn(eth_rst_n),
+
+    .rx_mac_aclk(eth_rx_mac_aclk),
+    .rx_reset(reset_btn),
+    .rx_axis_mac_tdata(eth_rx_axis_mac_tdata),
+    .rx_axis_mac_tvalid(eth_rx_axis_mac_tvalid),
+    .rx_axis_mac_tlast(eth_rx_axis_mac_tlast),
+    .rx_axis_mac_tuser(eth_rx_axis_mac_tuser),
+
+    .tx_ifg_delay(8'b0),
+    .tx_mac_aclk(eth_tx_mac_aclk),
+    .tx_reset(reset_btn),
+    .tx_axis_mac_tdata(eth_tx_axis_mac_tdata),
+    .tx_axis_mac_tvalid(eth_tx_axis_mac_tvalid),
+    .tx_axis_mac_tlast(eth_tx_axis_mac_tlast),
+    .tx_axis_mac_tuser(eth_tx_axis_mac_tuser),
+    .tx_axis_mac_tready(eth_tx_axis_mac_tready),
+
+    .pause_req(1'b0),
+    .pause_val(16'b0),
+
+    .rgmii_txd(eth_rgmii_td),
+    .rgmii_tx_ctl(eth_rgmii_tx_ctl),
+    .rgmii_txc(eth_rgmii_txc),
+    .rgmii_rxd(eth_rgmii_rd),
+    .rgmii_rx_ctl(eth_rgmii_rx_ctl),
+    .rgmii_rxc(eth_rgmii_rxc),
+
+    // receive 1Gb/s | promiscuous | flow control | fcs | enable
+    .rx_configuration_vector(80'b10100000101010),
+    // transmit 1Gb/s | enable
+    .tx_configuration_vector(80'b10000000000010)
 );
 /* =========== Demo code end =========== */
 
