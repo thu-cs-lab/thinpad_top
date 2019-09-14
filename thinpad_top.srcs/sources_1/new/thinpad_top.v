@@ -252,7 +252,6 @@ eth_mac eth_mac_inst (
     .tx_axi_rstn(eth_rst_n),
 
     .rx_mac_aclk(eth_rx_mac_aclk),
-    .rx_reset(reset_btn),
     .rx_axis_mac_tdata(eth_rx_axis_mac_tdata),
     .rx_axis_mac_tvalid(eth_rx_axis_mac_tvalid),
     .rx_axis_mac_tlast(eth_rx_axis_mac_tlast),
@@ -260,7 +259,6 @@ eth_mac eth_mac_inst (
 
     .tx_ifg_delay(8'b0),
     .tx_mac_aclk(eth_tx_mac_aclk),
-    .tx_reset(reset_btn),
     .tx_axis_mac_tdata(eth_tx_axis_mac_tdata),
     .tx_axis_mac_tvalid(eth_tx_axis_mac_tvalid),
     .tx_axis_mac_tlast(eth_tx_axis_mac_tlast),
