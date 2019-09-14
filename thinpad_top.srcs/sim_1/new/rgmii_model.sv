@@ -12,18 +12,25 @@ module rgmii_model (
     logic [7:0] count;
     logic [3:0] data1;
     logic [3:0] data2;
-    logic [7:0] example [71:0];
+    logic [7:0] example [2000:0];
+    integer fd, index, res;
 
     initial begin
         packet_clk = 0;
-        $readmemh("example_frame.mem", example);
+        fd = $fopen("example_frame.mem", "r");
+        index = 0;
+        res = 1;
+        while (!$feof(fd) && res) begin
+            res = $fscanf(fd, "%x", example[index]);
+            index = index + 1;
+        end
     end
 
     always packet_clk = #1000 ~packet_clk;
 
     always_ff @ (posedge clk_125M) begin
         count <= packet_clk ? count + 1 : 0;
-        if (packet_clk && count < 8'd72) begin
+        if (packet_clk && count < index - 1) begin
             trans <= 1'b1;
             data1 <= example[count][3:0];
             data2 <= example[count][7:4];
