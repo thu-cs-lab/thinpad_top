@@ -275,10 +275,10 @@ eth_mac eth_mac_inst (
     .rgmii_rx_ctl(eth_rgmii_rx_ctl),
     .rgmii_rxc(eth_rgmii_rxc),
 
-    // receive 1Gb/s | promiscuous | flow control | fcs | enable
-    .rx_configuration_vector(80'b10100000101010),
-    // transmit 1Gb/s | enable
-    .tx_configuration_vector(80'b10000000000010)
+    // receive 1Gb/s | promiscuous | flow control | fcs | vlan | enable
+    .rx_configuration_vector(80'b10100000101110),
+    // transmit 1Gb/s | vlan | enable
+    .tx_configuration_vector(80'b10000000000110)
 );
 /* =========== Demo code end =========== */
 
