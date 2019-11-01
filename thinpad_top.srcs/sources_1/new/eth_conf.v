@@ -10,7 +10,7 @@ module eth_conf(
     output wire done
 );
 
-parameter N_CONFIG_ENTRY = 14;
+parameter N_CONFIG_ENTRY = 31;
 
 reg [15:0] config_addr[0:N_CONFIG_ENTRY-1];
 reg [7:0] config_data[0:N_CONFIG_ENTRY-1];
@@ -48,6 +48,41 @@ initial begin
   config_data[12] = (1 << 4) | (1 << 2);
   config_addr[13] = 65;
   config_data[13] = (1 << 4) | (1 << 3);
+  // P1-P4 VLAN Table
+  config_addr[14] = 110;
+  config_data[14] = 20;
+  config_addr[15] = 111;
+  config_data[15] = 0; // Read from Set 0
+  config_addr[16] = 118; // VLAN 1, membership 1 and 5, FID = 1
+  config_data[16] = 8'b1_0000001;
+  config_addr[17] = 117;
+  config_data[17] = 8'b11000;
+  config_addr[18] = 116; // VLAN 2, membership 2 and 5, FID = 2
+  config_data[18] = 8'b0_0000010;
+  config_addr[19] = 115;
+  config_data[19] = 8'b11001;
+  config_addr[20] = 114; // VLAN 3, membership 3 and 5, FID = 3
+  config_data[20] = 8'b0_0000011;
+  config_addr[21] = 113;
+  config_data[21] = 8'b11010;
+  config_addr[22] = 110;
+  config_data[22] = 4;
+  config_addr[23] = 111;
+  config_data[23] = 0; // Write to Set 0
+  config_addr[24] = 110;
+  config_data[24] = 20;
+  config_addr[25] = 111;
+  config_data[25] = 1; // Read from Set 1
+  config_addr[26] = 118; // VLAN 4, membership 4 and 5, FID = 4
+  config_data[26] = 8'b0_0000100;
+  config_addr[27] = 117;
+  config_data[27] = 8'b11100;
+  config_addr[28] = 110;
+  config_data[28] = 4;
+  config_addr[29] = 111;
+  config_data[29] = 0; // Write to Set 1
+  config_addr[30] = 5; // VLAN Enable
+  config_data[30] = 8'b10000000;
 end
 
 reg [15:0] reg_addr;
@@ -58,7 +93,7 @@ reg rst_n;
 reg [2:0] conf_state;
 reg [14:0] wait_counter;
 
-reg [3:0] conf_entry_index;
+reg [5:0] conf_entry_index;
 reg conf_written;
 wire conf_wr_en;
 
