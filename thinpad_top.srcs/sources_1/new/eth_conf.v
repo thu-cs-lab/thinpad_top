@@ -73,14 +73,14 @@ initial begin
   config_data[24] = 20;
   config_addr[25] = 111;
   config_data[25] = 1; // Read from Set 1
-  config_addr[26] = 118; // VLAN 4, membership 4 and 5, FID = 4
+  config_addr[26] = 120; // VLAN 4, membership 4 and 5, FID = 4
   config_data[26] = 8'b0_0000100;
-  config_addr[27] = 117;
+  config_addr[27] = 119;
   config_data[27] = 8'b11100;
   config_addr[28] = 110;
   config_data[28] = 4;
   config_addr[29] = 111;
-  config_data[29] = 0; // Write to Set 1
+  config_data[29] = 1; // Write to Set 1
   config_addr[30] = 5; // VLAN Enable
   config_data[30] = 8'b10000000;
 end
