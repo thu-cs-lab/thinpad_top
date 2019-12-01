@@ -2,7 +2,7 @@
 
 module thinpad_top(
     input wire clk_50M,           //50MHz 时钟输入
-    input wire clk_11M0592,       //11.0592MHz 时钟输入
+    input wire clk_11M0592,       //11.0592MHz 时钟输入（备用，可不用）
 
     input wire clock_btn,         //BTN5手动时钟按钮开关，带消抖电路，按下时为1
     input wire reset_btn,         //BTN6手动复位按钮开关，带消抖电路，按下时为1
@@ -89,6 +89,8 @@ module thinpad_top(
 wire locked, clk_10M, clk_20M, clk_125M, clk_200M;
 pll_example clock_gen 
  (
+  // Clock in ports
+  .clk_in1(clk_50M)， // 外部时钟输入
   // Clock out ports
   .clk_out1(clk_10M), // 时钟输出1，频率在IP配置界面中设置
   .clk_out2(clk_20M), // 时钟输出2，频率在IP配置界面中设置
@@ -96,9 +98,8 @@ pll_example clock_gen
   .clk_out4(clk_200M), // 时钟输出4，频率在IP配置界面中设置
   // Status and control signals
   .reset(reset_btn), // PLL复位输入
-  .locked(locked), // 锁定输出，"1"表示时钟稳定，可作为后级电路复位
- // Clock in ports
-  .clk_in1(clk_50M) // 外部时钟输入
+  .locked(locked)    // PLL锁定指示输出，"1"表示时钟稳定，
+                     // 后级电路复位信号应当由它生成（见下）
  );
 
 assign eth_rst_n = ~reset_btn;
@@ -116,7 +117,7 @@ eth_conf conf(
 );
 
 reg reset_of_clk10M;
-// 异步复位，同步释放
+// 异步复位，同步释放，将locked信号转为后级电路的复位reset_of_clk10M
 always@(posedge clk_10M or negedge locked) begin
     if(~locked) reset_of_clk10M <= 1'b1;
     else        reset_of_clk10M <= 1'b0;
@@ -176,7 +177,7 @@ end
 //直连串口接收发送演示，从直连串口收到的数据再发送出去
 wire [7:0] ext_uart_rx;
 reg  [7:0] ext_uart_buffer, ext_uart_tx;
-wire ext_uart_ready, ext_uart_busy;
+wire ext_uart_ready, ext_uart_clear, ext_uart_busy;
 reg ext_uart_start, ext_uart_avai;
 
 async_receiver #(.ClkFrequency(50000000),.Baud(9600)) //接收模块，9600无检验位
@@ -184,10 +185,11 @@ async_receiver #(.ClkFrequency(50000000),.Baud(9600)) //接收模块，9600无�
         .clk(clk_50M),                       //外部时钟信号
         .RxD(rxd),                           //外部串行信号输入
         .RxD_data_ready(ext_uart_ready),  //数据接收到标志
-        .RxD_clear(ext_uart_ready),       //清除接收标志
+        .RxD_clear(ext_uart_clear),       //清除接收标志
         .RxD_data(ext_uart_rx)             //接收到的一字节数据
     );
-    
+
+assign ext_uart_clear = ext_uart_ready; //收到数据的同时，清除标志，因为数据已取到ext_uart_buffer中
 always @(posedge clk_50M) begin //接收到缓冲区ext_uart_buffer
     if(ext_uart_ready)begin
         ext_uart_buffer <= ext_uart_rx;

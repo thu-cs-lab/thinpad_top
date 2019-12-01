@@ -18,6 +18,7 @@
 //**************************************************************************//
 
 `timescale 1 ns/1 ps
+`default_nettype wire
 
 
 module sram_model(Address, DataIO, OE_n, CE_n,WE_n, LB_n, UB_n);
