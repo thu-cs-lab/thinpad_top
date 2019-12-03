@@ -87,7 +87,7 @@ wire locked, clk_10M, clk_20M;
 pll_example clock_gen 
  (
   // Clock in ports
-  .clk_in1(clk_50M)， // 外部时钟输入
+  .clk_in1(clk_50M),  // 外部时钟输入
   // Clock out ports
   .clk_out1(clk_10M), // 时钟输出1，频率在IP配置界面中设置
   .clk_out2(clk_20M), // 时钟输出2，频率在IP配置界面中设置
