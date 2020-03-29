@@ -77,7 +77,7 @@ module async_receiver(
 	input wire RxD,
 	output reg RxD_data_ready,
 	input wire RxD_clear,
-	output wire reg [7:0] RxD_data,  // data received, valid only (for one clock cycle) when RxD_data_ready is asserted
+	output reg [7:0] RxD_data,  // data received, valid only (for one clock cycle) when RxD_data_ready is asserted
 
 	// We also detect if a gap occurs in the received stream of characters
 	// That can be useful if multiple characters are sent in burst
