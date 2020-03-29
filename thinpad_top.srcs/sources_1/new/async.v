@@ -10,13 +10,13 @@
                        // and RX receives one bit per clock cycle (for fast simulations)
 
 ////////////////////////////////////////////////////////
-`default_nettype wire
+
 module async_transmitter(
-	input clk,
-	input TxD_start,
-	input [7:0] TxD_data,
-	output TxD,
-	output TxD_busy
+	input wire clk,
+	input wire TxD_start,
+	input wire [7:0] TxD_data,
+	output wire TxD,
+	output wire TxD_busy
 );
 
 // Assert TxD_start for (at least) one clock cycle to start transmission of TxD_data
@@ -73,17 +73,17 @@ endmodule
 
 ////////////////////////////////////////////////////////
 module async_receiver(
-	input clk,
-	input RxD,
-	output reg RxD_data_ready = 0,
-	input RxD_clear,
-	output reg [7:0] RxD_data = 0,  // data received, valid only (for one clock cycle) when RxD_data_ready is asserted
+	input wire clk,
+	input wire RxD,
+	output reg RxD_data_ready,
+	input wire RxD_clear,
+	output wire reg [7:0] RxD_data,  // data received, valid only (for one clock cycle) when RxD_data_ready is asserted
 
 	// We also detect if a gap occurs in the received stream of characters
 	// That can be useful if multiple characters are sent in burst
 	//  so that multiple characters can be treated as a "packet"
-	output RxD_idle,  // asserted when no data has been received for a while
-	output reg RxD_endofpacket = 0  // asserted for one clock cycle when a packet has been detected (i.e. RxD_idle is going high)
+	output wire RxD_idle,  // asserted when no data has been received for a while
+	output reg RxD_endofpacket  // asserted for one clock cycle when a packet has been detected (i.e. RxD_idle is going high)
 );
 
 parameter ClkFrequency = 25000000; // 25MHz
@@ -187,8 +187,8 @@ endmodule
 
 ////////////////////////////////////////////////////////
 module BaudTickGen(
-	input clk, enable,
-	output tick  // generate a tick at the specified baud rate * oversampling
+	input  wire clk, enable,
+	output wire tick  // generate a tick at the specified baud rate * oversampling
 );
 parameter ClkFrequency = 25000000;
 parameter Baud = 115200;
