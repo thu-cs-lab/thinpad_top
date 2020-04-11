@@ -7,10 +7,10 @@ stages:
 
 bitstream:
   stage: build
-  image: vivado2018:2018.3
+  image: vivado2019:2019.2
   script:
     - env
-    - /opt/Xilinx/Vivado/2018.3/bin/vivado -mode tcl -source build.tcl thinpad_top.xpr
+    - /opt/Xilinx/Vivado/2019.2/bin/vivado -mode tcl -source build.tcl thinpad_top.xpr
     - test -f thinpad_top.runs/impl_1/*.bit
 
   artifacts:
