@@ -23,12 +23,6 @@ module vga
     output wire data_enable
 );
 
-// init
-initial begin
-    hdata <= 0;
-    vdata <= 0;
-end
-
 // hdata
 always @ (posedge clk)
 begin
