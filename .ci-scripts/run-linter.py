@@ -10,8 +10,8 @@ import subprocess
 import traceback
 
 def is_header(f: Path):
-    with f.open() as fd:
-        return -1 == fd.read().find('endmodule')
+    with f.open('rb') as fd:
+        return -1 == fd.read().find(b'endmodule')
 
 def transcoding(src: Path, target: Path):
     with src.open("rb") as fd:
