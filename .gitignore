@@ -4,3 +4,5 @@ thinpad_top.ip_user_files/
 thinpad_top.runs/
 *.jou
 *.log
+*.dcp
+/.lint/
