@@ -10,6 +10,7 @@ bitstream:
   script:
     - env
     - /opt/Xilinx/Vivado/2019.2/bin/vivado -mode tcl -source .ci-scripts/bits.tcl thinpad_top.xpr
+    - ./.ci-scripts/run-linter.py thinpad_top.xpr 2>linter.log
     - test -f thinpad_top.runs/impl_1/*.bit
 
   artifacts:
@@ -18,4 +19,5 @@ bitstream:
     paths:
       - thinpad_top.runs/impl_1/*.bit
       - thinpad_top.runs/*/runme.log
+      - linter.log
 
