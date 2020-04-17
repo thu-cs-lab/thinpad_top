@@ -65,7 +65,7 @@ def parse_project(xpr: Path) -> Tuple[str, Set[str], Set[str]]:
 
 def run_linter(prjdir: Path, topname: str, srclist: Set[str], inclist: Set[str]):
     linter_log = prjdir / "linter.log"
-    args = ["verilator","--lint-only","-Wall","-Wno-DECLFILENAME"]
+    args = ["verilator","--lint-only","-Wall","-Wno-DECLFILENAME","-Wno-PINCONNECTEMPTY","-Wno-UNUSED"]
     args += ['--top-module', topname]
     incargs = [ '-I' + i for i in inclist]
     args += incargs

@@ -25,9 +25,9 @@ module async_transmitter(
 parameter ClkFrequency = 25000000;	// 25MHz
 parameter Baud = 115200;
 
-generate
-	if(ClkFrequency<Baud*8 && (ClkFrequency % Baud!=0)) ASSERTION_ERROR PARAMETER_OUT_OF_RANGE("Frequency incompatible with requested Baud rate");
-endgenerate
+// generate
+// 	if(ClkFrequency<Baud*8 && (ClkFrequency % Baud!=0)) ASSERTION_ERROR PARAMETER_OUT_OF_RANGE("Frequency incompatible with requested Baud rate");
+// endgenerate
 
 ////////////////////////////////
 `ifdef SIMULATION
@@ -77,13 +77,7 @@ module async_receiver(
 	input wire RxD,
 	output reg RxD_data_ready,
 	input wire RxD_clear,
-	output reg [7:0] RxD_data,  // data received, valid only (for one clock cycle) when RxD_data_ready is asserted
-
-	// We also detect if a gap occurs in the received stream of characters
-	// That can be useful if multiple characters are sent in burst
-	//  so that multiple characters can be treated as a "packet"
-	output wire RxD_idle,  // asserted when no data has been received for a while
-	output reg RxD_endofpacket  // asserted for one clock cycle when a packet has been detected (i.e. RxD_idle is going high)
+	output reg [7:0] RxD_data  // data received, valid only (for one clock cycle) when RxD_data_ready is asserted
 );
 
 parameter ClkFrequency = 25000000; // 25MHz
@@ -93,12 +87,20 @@ parameter Oversampling = 8;  // needs to be a power of 2
 // we oversample the RxD line at a fixed rate to capture each RxD data bit at the "right" time
 // 8 times oversampling by default, use 16 for higher quality reception
 
-generate
-	if(ClkFrequency<Baud*Oversampling) ASSERTION_ERROR PARAMETER_OUT_OF_RANGE("Frequency too low for current Baud rate and oversampling");
-	if(Oversampling<8 || ((Oversampling & (Oversampling-1))!=0)) ASSERTION_ERROR PARAMETER_OUT_OF_RANGE("Invalid oversampling value");
-endgenerate
+// generate
+// 	if(ClkFrequency<Baud*Oversampling) ASSERTION_ERROR PARAMETER_OUT_OF_RANGE("Frequency too low for current Baud rate and oversampling");
+// 	if(Oversampling<8 || ((Oversampling & (Oversampling-1))!=0)) ASSERTION_ERROR PARAMETER_OUT_OF_RANGE("Invalid oversampling value");
+// endgenerate
 
 ////////////////////////////////
+
+// We also detect if a gap occurs in the received stream of characters
+// That can be useful if multiple characters are sent in burst
+//  so that multiple characters can be treated as a "packet"
+wire RxD_idle;  // asserted when no data has been received for a while
+reg RxD_endofpacket; // asserted for one clock cycle when a packet has been detected (i.e. RxD_idle is going high)
+
+
 reg [3:0] RxD_state = 0;
 
 `ifdef SIMULATION
