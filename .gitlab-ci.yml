@@ -3,19 +3,17 @@ variables:
 
 stages:
   - build
-  - test
 
 bitstream:
   stage: build
-  image: vivado2018:2018.3
+  image: vivado2019:2019.2-mips-gcc
   script:
     - env
-    - /opt/Xilinx/Vivado/2018.3/bin/vivado -mode tcl -source build.tcl thinpad_top.xpr
+    - /opt/Xilinx/Vivado/2019.2/bin/vivado -mode tcl -source .ci-scripts/bits.tcl thinpad_top.xpr
     - test -f thinpad_top.runs/impl_1/*.bit
 
   artifacts:
     paths:
       - thinpad_top.runs/impl_1/*.bit
-      - thinpad_top.runs/impl_1/runme.log
-      - thinpad_top.runs/synth_1/runme.log
+      - thinpad_top.runs/*/runme.log
 
