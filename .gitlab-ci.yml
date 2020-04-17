@@ -13,6 +13,8 @@ bitstream:
     - test -f thinpad_top.runs/impl_1/*.bit
 
   artifacts:
+    name: "$CI_JOB_NAME-$CI_COMMIT_REF_NAME"
+    when: always
     paths:
       - thinpad_top.runs/impl_1/*.bit
       - thinpad_top.runs/*/runme.log
