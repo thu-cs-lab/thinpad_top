@@ -137,7 +137,7 @@ assign uart_wrn = 1'b1;
 //           // ---d---  p
 
 // 7段数码管译码器演示，将number用16进制显示在数码管上面
-reg[7:0] number;
+wire[7:0] number;
 SEG7_LUT segL(.oSEG1(dpy0), .iDIG(number[3:0])); //dpy0是低位数码管
 SEG7_LUT segH(.oSEG1(dpy1), .iDIG(number[7:4])); //dpy1是高位数码管
 
@@ -145,12 +145,10 @@ reg[15:0] led_bits;
 assign leds = led_bits;
 
 always@(posedge clock_btn or posedge reset_btn) begin
-    if(reset_btn)begin //复位按下，设置LED和数码管为初始值
-        number<=0;
+    if(reset_btn)begin //复位按下，设置LED为初始值
         led_bits <= 16'h1;
     end
-    else begin //每次按下时钟按钮，数码管显示值加1，LED循环左移
-        number <= number+1;
+    else begin //每次按下时钟按钮，LED循环左移
         led_bits <= {led_bits[14:0],led_bits[15]};
     end
 end
@@ -160,6 +158,8 @@ wire [7:0] ext_uart_rx;
 reg  [7:0] ext_uart_buffer, ext_uart_tx;
 wire ext_uart_ready, ext_uart_clear, ext_uart_busy;
 reg ext_uart_start, ext_uart_avai;
+    
+assign number = ext_uart_buffer;
 
 async_receiver #(.ClkFrequency(50000000),.Baud(9600)) //接收模块，9600无检验位
     ext_uart_r(
