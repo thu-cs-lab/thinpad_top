@@ -21,7 +21,7 @@ def transcoding(src: Path, target: Path):
         try:
             s = rawdata.decode(encoding)
         except:
-            print(f"Transcoding {src}:")
+            print("Transcoding", src, ':')
             traceback.print_exc()
             s = rawdata.decode(encoding, 'replace')
         with target.open("wb") as wfd:
@@ -49,7 +49,7 @@ def parse_project(xpr: Path) -> Tuple[str, Set[str], Set[str]]:
                 tmp = tmp.replace(".xci", '_stub.v')
                 vlog = Path(tmp)
                 if not vlog.is_file():
-                    print(f"Source file {vlog} does not exist")
+                    print("Source file", vlog, "does not exist")
                     continue
                 vlog_target = target / vlog.relative_to(prjdir)
                 vlog_target.parent.mkdir(exist_ok=True, parents=True)
@@ -73,7 +73,7 @@ def run_linter(prjdir: Path, topname: str, srclist: Set[str], inclist: Set[str])
     # print(args)
     res = subprocess.run(args)
     if res.returncode != 0:
-        print(f"Return code of verilator is {res.returncode}")
+        print("Return code of verilator is", res.returncode)
 
 if __name__ == "__main__":
     try:
