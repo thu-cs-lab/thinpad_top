@@ -6,3 +6,5 @@ thinpad_top.runs/
 *.log
 *.dcp
 /.lint/
+/.Xil
+/.Xilinx
