@@ -46,8 +46,26 @@ def parse_project(xpr: Path) -> Tuple[str, Set[str], Set[str]]:
                 tmp = child.attrib['Path']
                 tmp = tmp.replace('$PSRCDIR', str(srcdir))
                 tmp = tmp.replace('$PPRDIR', str(prjdir))
-                tmp = tmp.replace(".xci", '_stub.v')
                 vlog = Path(tmp)
+                if vlog.suffix not in ('.v', '.sv', '.xci'):
+                    print("File", vlog, "ignored")
+                    continue
+                if vlog.suffix == '.xci':
+                    ip_name = fileset.attrib['Name']
+                    if not ip_name:
+                        print("IP name not found")
+                        continue
+                    if ip_name + '.xci' != vlog.name:
+                        print("IP name mismatch:", vlog.name, ip_name)
+                    candidates = (prjdir / (prjname + ".ip_user_files") / "ip" / ip_name / (ip_name + "_stub.v"),
+                                    vlog.parent / (ip_name + "_stub.v"))
+                    for candi in candidates:
+                        if candi.is_file():
+                            vlog = candi
+                            break
+                    else:
+                        print("IP stub file not found in", candidates)
+                        continue
                 if not vlog.is_file():
                     print("Source file", vlog, "does not exist")
                     continue
