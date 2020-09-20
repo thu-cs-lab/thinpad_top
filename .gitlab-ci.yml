@@ -6,7 +6,9 @@ stages:
 
 bitstream:
   stage: build
-  image: vivado2019:2019.2-mips-gcc
+  image: vivado:2019.2
+  tags:
+    - cod20-ci-runner
   script:
     - env
     - /opt/Xilinx/Vivado/2019.2/bin/vivado -mode tcl -source .ci-scripts/bits.tcl thinpad_top.xpr
