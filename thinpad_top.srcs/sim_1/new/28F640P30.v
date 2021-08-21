@@ -1,3 +1,6 @@
+// set default nettype for this model
+`default_nettype wire
+
 //          _/             _/_/
 //        _/_/           _/_/_/
 //      _/_/_/_/         _/_/_/
@@ -4014,3 +4017,6 @@ event x5;
 event x6;
 
 endmodule
+
+// revert default nettype change
+`default_nettype none

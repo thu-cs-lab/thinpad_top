@@ -18,6 +18,7 @@
 //**************************************************************************//
 
 `timescale 1 ns/1 ps
+// set default nettype for this model
 `default_nettype wire
 
 
@@ -467,3 +468,5 @@ end
   
   endmodule  
     
+// revert nettype change
+`default_nettype none
