@@ -7,3 +7,4 @@ thinpad_top.runs/
 /.lint/
 /.Xil
 /.Xilinx
+*.str
