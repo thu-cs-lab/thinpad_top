@@ -3,7 +3,7 @@ module tb;
 
 wire clk_50M, clk_11M0592;
 
-reg clock_btn = 0;         //BTN5手动时钟按钮开关，带消抖电路，按下时为1
+reg push_btn = 0;         //BTN5手动时钟按钮开关，带消抖电路，按下时为1
 reg reset_btn = 0;         //BTN6手动复位按钮开关，带消抖电路，按下时为1
 
 reg[3:0]  touch_btn;  //BTN1~BTN4，按钮开关，按下时为1
@@ -61,9 +61,9 @@ initial begin
     reset_btn = 0;
     for (integer i = 0; i < 20; i = i+1) begin
         #100; //等待100ns
-        clock_btn = 1; //按下手工时钟按钮
+        push_btn = 1; //按下手工时钟按钮
         #100; //等待100ns
-        clock_btn = 0; //松开手工时钟按钮
+        push_btn = 0; //松开手工时钟按钮
     end
     // 模拟PC通过串口发送字符
     cpld.pc_send_byte(8'h32);
@@ -75,7 +75,7 @@ end
 thinpad_top dut(
     .clk_50M(clk_50M),
     .clk_11M0592(clk_11M0592),
-    .clock_btn(clock_btn),
+    .push_btn(push_btn),
     .reset_btn(reset_btn),
     .touch_btn(touch_btn),
     .dip_sw(dip_sw),

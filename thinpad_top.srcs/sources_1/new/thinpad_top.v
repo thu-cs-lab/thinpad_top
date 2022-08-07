@@ -4,8 +4,8 @@ module thinpad_top(
     input wire clk_50M,           //50MHz 时钟输入
     input wire clk_11M0592,       //11.0592MHz 时钟输入（备用，可不用）
 
-    input wire clock_btn,         //BTN5手动时钟按钮开关，带消抖电路，按下时为1
-    input wire reset_btn,         //BTN6手动复位按钮开关，带消抖电路，按下时为1
+    input wire push_btn,          //BTN5按钮开关，带消抖电路，按下时为1
+    input wire reset_btn,         //BTN6复位按钮，带消抖电路，按下时为1
 
     input  wire[3:0]  touch_btn,  //BTN1~BTN4，按钮开关，按下时为1
     input  wire[31:0] dip_sw,     //32位拨码开关，拨到“ON”时为1
@@ -144,7 +144,7 @@ SEG7_LUT segH(.oSEG1(dpy1), .iDIG(number[7:4])); //dpy1是高位数码管
 reg[15:0] led_bits;
 assign leds = led_bits;
 
-always@(posedge clock_btn or posedge reset_btn) begin
+always@(posedge push_btn or posedge reset_btn) begin
     if(reset_btn)begin //复位按下，设置LED为初始值
         led_bits <= 16'h1;
     end
