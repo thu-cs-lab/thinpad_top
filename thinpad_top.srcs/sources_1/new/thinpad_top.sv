@@ -83,7 +83,7 @@ module thinpad_top (
   /* =========== Demo code begin =========== */
 
   // PLL 分频示例
-  wire locked, clk_10M, clk_20M;
+  logic locked, clk_10M, clk_20M;
   pll_example clock_gen (
       // Clock in ports
       .clk_in1(clk_50M),  // 外部时钟输入
@@ -96,14 +96,14 @@ module thinpad_top (
                        // 后级电路复位信号应当由它生成（见下）
   );
 
-  reg reset_of_clk10M;
+  logic reset_of_clk10M;
   // 异步复位，同步释放，将 locked 信号转为后级电路的复位 reset_of_clk10M
-  always @(posedge clk_10M or negedge locked) begin
+  always_ff @(posedge clk_10M or negedge locked) begin
     if (~locked) reset_of_clk10M <= 1'b1;
     else reset_of_clk10M <= 1'b0;
   end
 
-  always @(posedge clk_10M or posedge reset_of_clk10M) begin
+  always_ff @(posedge clk_10M or posedge reset_of_clk10M) begin
     if (reset_of_clk10M) begin
       // Your Code
     end else begin
@@ -135,7 +135,7 @@ module thinpad_top (
   //           // ---d---  p
 
   // 7 段数码管译码器演示，将 number 用 16 进制显示在数码管上面
-  wire [7:0] number;
+  logic [7:0] number;
   SEG7_LUT segL (
       .oSEG1(dpy0),
       .iDIG (number[3:0])
@@ -145,10 +145,10 @@ module thinpad_top (
       .iDIG (number[7:4])
   );  // dpy1 是高位数码管
 
-  reg [15:0] led_bits;
+  logic [15:0] led_bits;
   assign leds = led_bits;
 
-  always @(posedge push_btn or posedge reset_btn) begin
+  always_ff @(posedge push_btn or posedge reset_btn) begin
     if (reset_btn) begin  // 复位按下，设置 LED 为初始值
       led_bits <= 16'h1;
     end else begin  // 每次按下时钟按钮，LED 循环左移
@@ -157,10 +157,10 @@ module thinpad_top (
   end
 
   // 直连串口接收发送演示，从直连串口收到的数据再发送出去
-  wire [7:0] ext_uart_rx;
-  reg [7:0] ext_uart_buffer, ext_uart_tx;
-  wire ext_uart_ready, ext_uart_clear, ext_uart_busy;
-  reg ext_uart_start, ext_uart_avai;
+  logic [7:0] ext_uart_rx;
+  logic [7:0] ext_uart_buffer, ext_uart_tx;
+  logic ext_uart_ready, ext_uart_clear, ext_uart_busy;
+  logic ext_uart_start, ext_uart_avai;
 
   assign number = ext_uart_buffer;
 
@@ -177,7 +177,7 @@ module thinpad_top (
   );
 
   assign ext_uart_clear = ext_uart_ready; // 收到数据的同时，清除标志，因为数据已取到 ext_uart_buffer 中
-  always @(posedge clk_50M) begin  // 接收到缓冲区 ext_uart_buffer
+  always_ff @(posedge clk_50M) begin  // 接收到缓冲区 ext_uart_buffer
     if (ext_uart_ready) begin
       ext_uart_buffer <= ext_uart_rx;
       ext_uart_avai   <= 1;
@@ -185,7 +185,7 @@ module thinpad_top (
       ext_uart_avai <= 0;
     end
   end
-  always @(posedge clk_50M) begin  // 将缓冲区 ext_uart_buffer 发送出去
+  always_ff @(posedge clk_50M) begin  // 将缓冲区 ext_uart_buffer 发送出去
     if (!ext_uart_busy && ext_uart_avai) begin
       ext_uart_tx <= ext_uart_buffer;
       ext_uart_start <= 1;
@@ -207,7 +207,7 @@ module thinpad_top (
   );
 
   // 图像输出演示，分辨率 800x600@75Hz，像素时钟为 50MHz
-  wire [11:0] hdata;
+  logic [11:0] hdata;
   assign video_red   = hdata < 266 ? 3'b111 : 0;  // 红色竖条
   assign video_green = hdata < 532 && hdata >= 266 ? 3'b111 : 0;  // 绿色竖条
   assign video_blue  = hdata >= 532 ? 2'b11 : 0;  // 蓝色竖条
