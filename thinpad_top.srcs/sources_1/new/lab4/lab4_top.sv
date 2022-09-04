@@ -111,6 +111,10 @@ module lab4_top (
   assign sys_clk = clk_10M;
   assign sys_rst = reset_of_clk10M;
 
+  // 本实验不使用 CPLD 串口，禁用防止总线冲突
+  assign uart_rdn = 1'b1;
+  assign uart_wrn = 1'b1;
+
   /* =========== Lab4 Master begin =========== */
   // SRAM Tester (Master) => Wishbone MUX (Slave)
   logic        wbm_cyc_o;

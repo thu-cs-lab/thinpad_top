@@ -111,7 +111,9 @@ module lab5_top (
   assign sys_clk = clk_10M;
   assign sys_rst = reset_of_clk10M;
 
-  // TODO: 思考：这里还需要什么模块？
+  // 本实验不使用 CPLD 串口，禁用防止总线冲突
+  assign uart_rdn = 1'b1;
+  assign uart_wrn = 1'b1;
 
   /* =========== Lab5 Master begin =========== */
   // Lab5 Master => Wishbone MUX (Slave)
@@ -130,8 +132,6 @@ module lab5_top (
   ) u_lab5_master (
       .clk_i(sys_clk),
       .rst_i(sys_rst),
-
-      // TODO: 添加你需要的控制信号
 
       // wishbone master
       .wb_cyc_o(wbm_cyc_o),
