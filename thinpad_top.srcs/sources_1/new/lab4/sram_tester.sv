@@ -6,29 +6,29 @@ module sram_tester #(
     parameter ADDR_MASK   = 32'h007F_FFFF,
     parameter TEST_ROUNDS = 1000
 ) (
-    input logic clk_i,
-    input logic rst_i,
+    input wire clk_i,
+    input wire rst_i,
 
-    input logic start,
-    input logic [31:0] random_seed,
+    input wire start,
+    input wire [31:0] random_seed,
 
     // wishbone master
-    output logic wb_cyc_o,
-    output logic wb_stb_o,
-    input logic wb_ack_i,
-    output logic [ADDR_WIDTH-1:0] wb_adr_o,
-    output logic [DATA_WIDTH-1:0] wb_dat_o,
-    input logic [DATA_WIDTH-1:0] wb_dat_i,
-    output logic [DATA_WIDTH/8-1:0] wb_sel_o,
-    output logic wb_we_o,
+    output reg wb_cyc_o,
+    output reg wb_stb_o,
+    input wire wb_ack_i,
+    output reg [ADDR_WIDTH-1:0] wb_adr_o,
+    output reg [DATA_WIDTH-1:0] wb_dat_o,
+    input wire [DATA_WIDTH-1:0] wb_dat_i,
+    output reg [DATA_WIDTH/8-1:0] wb_sel_o,
+    output reg wb_we_o,
 
     // status signals
-    output logic done,
-    output logic error,
-    output logic [31:0] error_round,
-    output logic [ADDR_WIDTH-1:0] error_addr,
-    output logic [DATA_WIDTH-1:0] error_read_data,
-    output logic [DATA_WIDTH-1:0] error_expected_data
+    output reg done,
+    output reg error,
+    output reg [31:0] error_round,
+    output reg [ADDR_WIDTH-1:0] error_addr,
+    output reg [DATA_WIDTH-1:0] error_read_data,
+    output reg [DATA_WIDTH-1:0] error_expected_data
 );
 
   localparam RAM_ADDR_WIDTH = $clog2(ADDR_MASK); // ceil to correct bits
