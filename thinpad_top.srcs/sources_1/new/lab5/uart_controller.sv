@@ -6,22 +6,22 @@ module uart_controller #(
     parameter BAUD = 115200
 ) (
     // clk and reset
-    input logic clk_i,
-    input logic rst_i,
+    input wire clk_i,
+    input wire rst_i,
 
     // wishbone slave interface
-    input logic wb_cyc_i,
-    input logic wb_stb_i,
-    output logic wb_ack_o,
-    input logic [ADDR_WIDTH-1:0] wb_adr_i,
-    input logic [DATA_WIDTH-1:0] wb_dat_i,
-    output logic [DATA_WIDTH-1:0] wb_dat_o,
-    input logic [DATA_WIDTH/8-1:0] wb_sel_i,
-    input logic wb_we_i,
+    input wire wb_cyc_i,
+    input wire wb_stb_i,
+    output reg wb_ack_o,
+    input wire [ADDR_WIDTH-1:0] wb_adr_i,
+    input wire [DATA_WIDTH-1:0] wb_dat_i,
+    output reg [DATA_WIDTH-1:0] wb_dat_o,
+    input wire [DATA_WIDTH/8-1:0] wb_sel_i,
+    input wire wb_we_i,
 
     // uart interface
-    output logic uart_txd_o,
-    input  logic uart_rxd_i
+    output reg uart_txd_o,
+    input  wire uart_rxd_i
 );
 
   localparam REG_DATA = 8'h00;
