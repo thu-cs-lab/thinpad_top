@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-module lab5_tb;
+module lab4_tb;
 
   wire clk_50M, clk_11M0592;
 
