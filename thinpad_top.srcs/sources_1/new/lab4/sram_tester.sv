@@ -32,16 +32,15 @@ module sram_tester #(
 );
 
   localparam RAM_ADDR_WIDTH = $clog2(ADDR_MASK); // ceil to correct bits
+  localparam ADDR_ZEROS = ADDR_WIDTH - RAM_ADDR_WIDTH;
 
   typedef enum logic [3:0] {
     ST_IDLE,
 
-    ST_WRITE_ADR,
-    ST_WRITE_DAT,
+    ST_WRITE,
     ST_WRITE_ACTION,
 
-    ST_READ_ADR,
-    ST_READ_DAT,
+    ST_READ,
     ST_READ_ACTION,
 
     ST_ERROR,
@@ -50,7 +49,8 @@ module sram_tester #(
 
   logic [31:0] count;
   logic [DATA_WIDTH-1:0] data_expected;
-  logic [DATA_WIDTH-1:0] data_mask;
+  logic [DATA_WIDTH-1:0] data_mask;  // mask out rng for write
+  logic [DATA_WIDTH/8-1:0] read_compare;  // byte read compare result
 
   state_t state, state_n;
 
@@ -59,36 +59,28 @@ module sram_tester #(
     case (state)
       ST_IDLE: begin
         // start test sequence
-        if (start) state_n = ST_WRITE_ADR;
+        if (start) state_n = ST_WRITE;
       end
 
-      ST_WRITE_ADR: begin
-        if (count == TEST_ROUNDS - 1) state_n = ST_READ_ADR;
-        else state_n = ST_WRITE_DAT;
-      end
-
-      ST_WRITE_DAT: begin
-        state_n = ST_WRITE_ACTION;
+      ST_WRITE: begin
+        if (count == TEST_ROUNDS) state_n = ST_READ;
+        else state_n = ST_WRITE_ACTION;
       end
 
       ST_WRITE_ACTION: begin
         // wait for ack
-        if (wb_ack_i) state_n = ST_WRITE_ADR;
+        if (wb_ack_i) state_n = ST_WRITE;
       end
 
-      ST_READ_ADR: begin
-        if (count == TEST_ROUNDS - 1) state_n = ST_DONE;
-        else state_n = ST_READ_DAT;
-      end
-
-      ST_READ_DAT: begin
-        state_n = ST_READ_ACTION;
+      ST_READ: begin
+        if (count == TEST_ROUNDS) state_n = ST_DONE;
+        else state_n = ST_READ_ACTION;
       end
 
       ST_READ_ACTION: begin
         if (wb_ack_i) begin
-          if ((wb_dat_i & data_mask) != data_expected) state_n = ST_ERROR;
-          else state_n = ST_READ_ADR;
+          if (!(&read_compare)) state_n = ST_ERROR;
+          else state_n = ST_READ;
         end
       end
 
@@ -118,9 +110,9 @@ module sram_tester #(
   always_ff @(posedge clk_i or posedge rst_i) begin
     if (rst_i) begin
       count <= '0;
-    end else if (state == ST_WRITE_ADR || state == ST_READ_ADR) begin
+    end else if (state == ST_WRITE || state == ST_READ) begin
       count <= count + 'd1;
-      if (count == TEST_ROUNDS - 1) begin
+      if (count == TEST_ROUNDS) begin
         count <= '0;
       end
     end
@@ -128,34 +120,24 @@ module sram_tester #(
 
   // rng control
   logic rng_load;
-  logic rng_addr_enable, rng_data_enable;
   always_comb begin
     rng_load = 0;
-
     case (state)
       ST_IDLE: begin
         if (start) rng_load = 1;
       end
 
-      ST_WRITE_ADR: begin
-        if (count == TEST_ROUNDS - 1) rng_load = 1;
+      ST_WRITE: begin
+        if (count == TEST_ROUNDS) rng_load = 1;
       end
+
+      default: rng_load = 0;
     endcase
   end
 
+  logic rng_enable;
   always_comb begin
-    rng_addr_enable = 0;
-    rng_data_enable = 0;
-
-    case (state)
-      ST_WRITE_ADR, ST_READ_ADR: begin
-        rng_addr_enable = 1;
-      end
-
-      ST_WRITE_DAT, ST_READ_DAT: begin
-        rng_data_enable = 1;
-      end
-    endcase
+    rng_enable = (state == ST_WRITE) || (state == ST_READ);
   end
 
   // address prng
@@ -168,10 +150,9 @@ module sram_tester #(
       .load(rng_load),
       .seed(random_seed | 32'h1),
 
-      .enable  (rng_addr_enable),
+      .enable  (rng_enable),
       .data_out(rng_addr)
   );
-
 
   // data prng
   logic [DATA_WIDTH-1:0] rng_data;
@@ -183,59 +164,57 @@ module sram_tester #(
       .load(rng_load),
       .seed(random_seed | 32'h1),
 
-      .enable  (rng_data_enable),
+      .enable  (rng_enable),
       .data_out(rng_data)
   );
 
-  // address and data buffer
-  always_ff @(posedge clk_i or posedge rst_i) begin
-    if (rst_i) begin
-      wb_dat_o <= '0;
-      wb_adr_o <= '0;
-      data_expected <= '0;
-    end else begin
-      case (state)
-        ST_WRITE_ADR, ST_READ_ADR: begin
-          wb_adr_o <= ADDR_BASE | (rng_addr & ADDR_MASK);
-        end
+  // address and data output
+  always_comb begin
+    wb_adr_o = '0;
+    wb_dat_o = '0;
+    data_expected = '0;
 
-        ST_WRITE_DAT: begin
-          wb_dat_o <= rng_data & data_mask;
-        end
+    case (state)
+      ST_WRITE, ST_WRITE_ACTION: begin
+        wb_adr_o = ADDR_BASE | {{ADDR_ZEROS{1'b0}}, rng_addr};
+        wb_dat_o = rng_data & data_mask;
+      end
 
-        ST_READ_DAT: begin
-          data_expected <= rng_data & data_mask;
-        end
-      endcase
-    end
+      ST_READ, ST_READ_ACTION: begin
+        wb_adr_o = ADDR_BASE | {{ADDR_ZEROS{1'b0}}, rng_addr};
+        data_expected = rng_data & data_mask;
+      end
+
+      default: begin
+        wb_adr_o = '0;
+        wb_dat_o = '0;
+        data_expected = '0;
+      end
+    endcase
+  end
+
+  // data mask
+  genvar i;
+  for (i = 0; i < DATA_WIDTH / 8; i = i + 1) begin : gen_compare
+    assign data_mask[i*8+:8] = wb_sel_o[i] ? 8'hFF : 8'h00;
+    assign read_compare[i] = ~wb_sel_o[i] ? 1'b1 : (wb_dat_i[i*8+:8] == data_expected[i*8+:8]);
   end
 
   // wishbone bus
   assign wb_cyc_o = wb_stb_o;
-
-  genvar i;
-  for (i = 0; i < DATA_WIDTH / 8; i = i + 1) begin
-    assign data_mask[i*8+:8] = wb_sel_o[i] ? 8'hFF : 8'h00;
-  end
 
   always_comb begin
     wb_we_o = (state == ST_WRITE_ACTION);
     wb_stb_o = (state == ST_READ_ACTION || state == ST_WRITE_ACTION);
   end
 
-  always_ff @(posedge clk_i or posedge rst_i) begin
-    if (rst_i) begin
-      wb_sel_o <= '0;
-    end else begin
-      if (state == ST_READ_ADR || state == ST_WRITE_ADR) begin
-        case (wb_adr_o[1:0])
-          2'b00: wb_sel_o <= 4'b1111;  // full word
-          2'b10: wb_sel_o <= 4'b1100;  // half word
-          2'b01: wb_sel_o <= 4'b0010;  // byte
-          2'b11: wb_sel_o <= 4'b1000;  // byte
-        endcase
-      end
-    end
+  always_comb begin
+    case (wb_adr_o[1:0])
+      2'b00: wb_sel_o = 4'b1111;  // full word
+      2'b10: wb_sel_o = 4'b1100;  // half word
+      2'b01: wb_sel_o = 4'b0010;  // byte
+      2'b11: wb_sel_o = 4'b1000;  // byte
+    endcase
   end
 
   // status output
