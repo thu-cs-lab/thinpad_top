@@ -68,7 +68,11 @@ module uart_controller #(
       wb_ack_o <= 0;
     else
       // every request get ACK-ed immediately
-      wb_ack_o <= wb_stb_i;
+      if (wb_ack_o) begin
+        wb_ack_o <= 0;
+      end else begin
+        wb_ack_o <= wb_stb_i;
+      end
   end
 
   // write logic
