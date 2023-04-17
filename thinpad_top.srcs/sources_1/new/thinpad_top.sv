@@ -206,13 +206,13 @@ module thinpad_top (
       .TxD_data (ext_uart_tx)      // 待发送的数据
   );
 
-  // 图像输出演示，分辨率 800x600@75Hz，像素时钟为 50MHz
+  // 图像输出演示，分辨率 800x600@72Hz，像素时钟为 50MHz
   logic [11:0] hdata;
   assign video_red   = hdata < 266 ? 3'b111 : 0;  // 红色竖条
   assign video_green = hdata < 532 && hdata >= 266 ? 3'b111 : 0;  // 绿色竖条
   assign video_blue  = hdata >= 532 ? 2'b11 : 0;  // 蓝色竖条
   assign video_clk   = clk_50M;
-  vga #(12, 800, 856, 976, 1040, 600, 637, 643, 666, 1, 1) vga800x600at75 (
+  vga #(12, 800, 856, 976, 1040, 600, 637, 643, 666, 1, 1) vga800x600at72 (
       .clk        (clk_50M),
       .hdata      (hdata),        // 横坐标
       .vdata      (),             // 纵坐标
