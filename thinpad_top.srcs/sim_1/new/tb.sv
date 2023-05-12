@@ -18,14 +18,14 @@ module tb;
 
   wire [31:0] base_ram_data;  // BaseRAM 数据，低 8 位与 CPLD 串口控制器共享
   wire [19:0] base_ram_addr;  // BaseRAM 地址
-  wire[3:0] base_ram_be_n;    // BaseRAM 字节使能，低有效。如果不使用字节使能，请保持为 0
+  wire [3:0] base_ram_be_n;   // BaseRAM 字节使能，低有效。如果不使用字节使能，请保持为 0
   wire base_ram_ce_n;  // BaseRAM 片选，低有效
   wire base_ram_oe_n;  // BaseRAM 读使能，低有效
   wire base_ram_we_n;  // BaseRAM 写使能，低有效
 
   wire [31:0] ext_ram_data;  // ExtRAM 数据
   wire [19:0] ext_ram_addr;  // ExtRAM 地址
-  wire[3:0] ext_ram_be_n;    // ExtRAM 字节使能，低有效。如果不使用字节使能，请保持为 0
+  wire [3:0] ext_ram_be_n;   // ExtRAM 字节使能，低有效。如果不使用字节使能，请保持为 0
   wire ext_ram_ce_n;  // ExtRAM 片选，低有效
   wire ext_ram_oe_n;  // ExtRAM 读使能，低有效
   wire ext_ram_we_n;  // ExtRAM 写使能，低有效
