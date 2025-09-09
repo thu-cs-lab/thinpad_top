@@ -4,9 +4,9 @@ module SEG7_LUT (
 );
   input wire [3:0] iDIG;
   output wire [7:0] oSEG1;
-  reg [6:0] oSEG;
+  logic [6:0] oSEG;
 
-  always @(iDIG) begin
+  always_comb begin
     case (iDIG)
       4'h1: oSEG = 7'b1110110;  // ---t----
       4'h2: oSEG = 7'b0100001;  // |      |

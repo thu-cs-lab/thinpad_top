@@ -148,10 +148,10 @@ module thinpad_top (
   logic [15:0] led_bits;
   assign leds = led_bits;
 
-  always_ff @(posedge push_btn or posedge reset_btn) begin
+  always_ff @(posedge clk_50M) begin
     if (reset_btn) begin  // 复位按下，设置 LED 为初始值
       led_bits <= 16'h1;
-    end else begin  // 每次按下按钮开关，LED 循环左移
+    end else if (push_btn) begin  // 每次按下按钮开关，LED 循环左移
       led_bits <= {led_bits[14:0], led_bits[15]};
     end
   end
