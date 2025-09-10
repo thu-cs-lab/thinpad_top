@@ -27,4 +27,4 @@ clean_job:
   tags:
     - cod24-ci-runner
   script:
-    - rm -rf ../*
+    - rm -rf $PWD
