@@ -57,7 +57,7 @@ def parse_project(xpr: Path) -> Tuple[str, Set[str], Set[str]]:
                         continue
                     if ip_name + '.xci' != vlog.name:
                         print("IP name mismatch:", vlog.name, ip_name)
-                    candidates = (prjdir / (prjname + ".ip_user_files") / "ip" / ip_name / (ip_name + "_stub.v"),
+                    candidates = (prjdir / (prjname + ".gen/sources_1") / "ip" / ip_name / (ip_name + "_stub.v"),
                                     vlog.parent / (ip_name + "_stub.v"))
                     for candi in candidates:
                         if candi.is_file():

@@ -28,3 +28,5 @@ clean_job:
     - cod24-ci-runner
   script:
     - rm -rf $PWD
+  dependencies:
+    - bitstream
