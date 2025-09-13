@@ -53,10 +53,20 @@ module lab4_tb;
     #100;
     reset_btn = 0;
 
-    #1000; // 等待复位结束
+    // TODO: 根据实验的操作要求，自定义下面的输入序列
+    for (integer i = 0; i < 20; i = i + 1) begin
+      #100;  // 等待 100ns
+      push_btn = 1;  // 按下 push_btn 按钮
+      #100;  // 等待 100ns
+      push_btn = 0;  // 松开 push_btn 按钮
+    end
 
-    // 按下按钮，开始 SRAM Tester 的测试
-    push_btn = 1;
+    // 模拟 PC 通过串口，向 FPGA 发送字符
+    uart.pc_send_byte(8'h32); // ASCII '2'
+    #10000;
+    uart.pc_send_byte(8'h33); // ASCII '3'
+
+    // PC 接收到数据后，会在仿真窗口中打印出数据
 
     // 等待一段时间，结束仿真
     #10000 $finish;

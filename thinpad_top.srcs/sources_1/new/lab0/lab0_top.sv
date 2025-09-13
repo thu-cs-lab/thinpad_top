@@ -1,6 +1,6 @@
 `default_nettype none
 
-module lab2_top (
+module lab0_top (
     input wire clk_50M,     // 50MHz 时钟输入
     input wire clk_11M0592, // 11.0592MHz 时钟输入（备用，可不用）
 
@@ -105,9 +105,23 @@ module lab2_top (
 
   /* =========== Demo code end =========== */
 
-  // TODO: 内部信号声明
+  // 内部信号声明
+  logic trigger;
+  logic [3:0] count;
 
-  // TODO: 实验模块例化
+  // 计数器模块
+  // TODO: 在 lab0 目录中新建 counter.sv，实现该模块
+  counter u_counter (
+      .clk    (clk_10M),
+      .reset  (reset_of_clk10M),
+      .trigger(trigger),
+      .count  (count)
+  );
 
+  // 按键检测模块，在按键上升沿（按下）后输出高电平脉冲
+  // TODO: 同上，实现 trigger 模块，并例化
+
+  // 低位数码管译码器
+  // TODO: 例化模板中的 SEG7_LUT 模块
 
 endmodule

@@ -1,4 +1,4 @@
-module lab5_master #(
+module lab4_master #(
     parameter ADDR_WIDTH = 32,
     parameter DATA_WIDTH = 32
 ) (

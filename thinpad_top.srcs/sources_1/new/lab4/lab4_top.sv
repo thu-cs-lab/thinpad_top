@@ -115,8 +115,8 @@ module lab4_top (
   assign uart_rdn = 1'b1;
   assign uart_wrn = 1'b1;
 
-  /* =========== Lab4 Master begin =========== */
-  // SRAM Tester (Master) => Wishbone MUX (Slave)
+  /* =========== lab4 Master begin =========== */
+  // lab4 Master => Wishbone MUX (Slave)
   logic        wbm_cyc_o;
   logic        wbm_stb_o;
   logic        wbm_ack_i;
@@ -126,31 +126,14 @@ module lab4_top (
   logic [ 3:0] wbm_sel_o;
   logic        wbm_we_o;
 
-  // 测试控制信号
-  logic        test_start;
-  logic [31:0] random_seed;
-
-  assign test_start  = push_btn;  // 按钮开关开始测试
-  assign random_seed = dip_sw;  // 拨码开关输入随机数种子
-
-  // 测试结果输出到 LED
-  logic test_done, test_error;
-  assign leds[0] = test_done;
-  assign leds[1] = test_error;
-  assign leds[15:2] = '0;
-
-  // 详细结果信息，信号仅用于仿真查看，不连接外部硬件
-  logic [31:0] test_error_round;  // 数据错误轮次
-  logic [31:0] test_error_addr;  // 数据错误地址
-  logic [31:0] test_error_read_data;  // 错误地址读出的数据
-  logic [31:0] test_error_expected_data;  // 错误地址预期的数据
-
-  sram_tester #(
-      .ADDR_BASE(32'h8000_0000),
-      .ADDR_MASK(32'h007F_FFFF)
-  ) u_sram_tester (
+  lab4_master #(
+      .ADDR_WIDTH(32),
+      .DATA_WIDTH(32)
+  ) u_lab4_master (
       .clk_i(sys_clk),
       .rst_i(sys_rst),
+
+      // TODO: 添加需要的控制信号，例如按键开关？
 
       // wishbone master
       .wb_cyc_o(wbm_cyc_o),
@@ -160,27 +143,13 @@ module lab4_top (
       .wb_dat_o(wbm_dat_o),
       .wb_dat_i(wbm_dat_i),
       .wb_sel_o(wbm_sel_o),
-      .wb_we_o (wbm_we_o),
-
-      // control input
-      .start      (test_start),
-      .random_seed(random_seed),
-
-      // status output
-      .done (test_done),
-      .error(test_error),
-
-      // detailed status for simulation
-      .error_round        (test_error_round),
-      .error_addr         (test_error_addr),
-      .error_read_data    (test_error_read_data),
-      .error_expected_data(test_error_expected_data)
+      .wb_we_o (wbm_we_o)
   );
 
-  /* =========== Lab4 Master end =========== */
+  /* =========== lab4 Master end =========== */
 
-  /* =========== Lab4 MUX begin =========== */
-  // Wishbone MUX (Masters) => SRAM controllers
+  /* =========== lab4 MUX begin =========== */
+  // Wishbone MUX (Masters) => bus slaves
   logic wbs0_cyc_o;
   logic wbs0_stb_o;
   logic wbs0_ack_i;
@@ -199,11 +168,20 @@ module lab4_top (
   logic [3:0] wbs1_sel_o;
   logic wbs1_we_o;
 
-  wb_mux_2 wb_mux (
+  logic wbs2_cyc_o;
+  logic wbs2_stb_o;
+  logic wbs2_ack_i;
+  logic [31:0] wbs2_adr_o;
+  logic [31:0] wbs2_dat_o;
+  logic [31:0] wbs2_dat_i;
+  logic [3:0] wbs2_sel_o;
+  logic wbs2_we_o;
+
+  wb_mux_3 wb_mux (
       .clk(sys_clk),
       .rst(sys_rst),
 
-      // Master interface (to SRAM Tester)
+      // Master interface (to lab4 master)
       .wbm_adr_i(wbm_adr_o),
       .wbm_dat_i(wbm_dat_o),
       .wbm_dat_o(wbm_dat_i),
@@ -245,28 +223,44 @@ module lab4_top (
       .wbs1_ack_i(wbs1_ack_i),
       .wbs1_err_i('0),
       .wbs1_rty_i('0),
-      .wbs1_cyc_o(wbs1_cyc_o)
+      .wbs1_cyc_o(wbs1_cyc_o),
+
+      // Slave interface 2 (to UART controller)
+      // Address range: 0x1000_0000 ~ 0x1000_FFFF
+      .wbs2_addr    (32'h1000_0000),
+      .wbs2_addr_msk(32'hFFFF_0000),
+
+      .wbs2_adr_o(wbs2_adr_o),
+      .wbs2_dat_i(wbs2_dat_i),
+      .wbs2_dat_o(wbs2_dat_o),
+      .wbs2_we_o (wbs2_we_o),
+      .wbs2_sel_o(wbs2_sel_o),
+      .wbs2_stb_o(wbs2_stb_o),
+      .wbs2_ack_i(wbs2_ack_i),
+      .wbs2_err_i('0),
+      .wbs2_rty_i('0),
+      .wbs2_cyc_o(wbs2_cyc_o)
   );
 
-  /* =========== Lab4 MUX end =========== */
+  /* =========== lab4 MUX end =========== */
 
-  /* =========== Lab4 Slaves begin =========== */
+  /* =========== lab4 Slaves begin =========== */
   sram_controller #(
       .SRAM_ADDR_WIDTH(20),
       .SRAM_DATA_WIDTH(32)
   ) sram_controller_base (
-      .clk_i    (sys_clk),
-      .rst_i    (sys_rst),
+      .clk_i(sys_clk),
+      .rst_i(sys_rst),
 
       // Wishbone slave (to MUX)
-      .wb_cyc_i (wbs0_cyc_o),
-      .wb_stb_i (wbs0_stb_o),
-      .wb_ack_o (wbs0_ack_i),
-      .wb_adr_i (wbs0_adr_o),
-      .wb_dat_i (wbs0_dat_o),
-      .wb_dat_o (wbs0_dat_i),
-      .wb_sel_i (wbs0_sel_o),
-      .wb_we_i  (wbs0_we_o),
+      .wb_cyc_i(wbs0_cyc_o),
+      .wb_stb_i(wbs0_stb_o),
+      .wb_ack_o(wbs0_ack_i),
+      .wb_adr_i(wbs0_adr_o),
+      .wb_dat_i(wbs0_dat_o),
+      .wb_dat_o(wbs0_dat_i),
+      .wb_sel_i(wbs0_sel_o),
+      .wb_we_i (wbs0_we_o),
 
       // To SRAM chip
       .sram_addr(base_ram_addr),
@@ -281,18 +275,18 @@ module lab4_top (
       .SRAM_ADDR_WIDTH(20),
       .SRAM_DATA_WIDTH(32)
   ) sram_controller_ext (
-      .clk_i    (sys_clk),
-      .rst_i    (sys_rst),
+      .clk_i(sys_clk),
+      .rst_i(sys_rst),
 
       // Wishbone slave (to MUX)
-      .wb_cyc_i (wbs1_cyc_o),
-      .wb_stb_i (wbs1_stb_o),
-      .wb_ack_o (wbs1_ack_i),
-      .wb_adr_i (wbs1_adr_o),
-      .wb_dat_i (wbs1_dat_o),
-      .wb_dat_o (wbs1_dat_i),
-      .wb_sel_i (wbs1_sel_o),
-      .wb_we_i  (wbs1_we_o),
+      .wb_cyc_i(wbs1_cyc_o),
+      .wb_stb_i(wbs1_stb_o),
+      .wb_ack_o(wbs1_ack_i),
+      .wb_adr_i(wbs1_adr_o),
+      .wb_dat_i(wbs1_dat_o),
+      .wb_dat_o(wbs1_dat_i),
+      .wb_sel_i(wbs1_sel_o),
+      .wb_we_i (wbs1_we_o),
 
       // To SRAM chip
       .sram_addr(ext_ram_addr),
@@ -302,6 +296,30 @@ module lab4_top (
       .sram_we_n(ext_ram_we_n),
       .sram_be_n(ext_ram_be_n)
   );
-  /* =========== Lab4 Slaves end =========== */
+
+  // 串口控制器模块
+  // NOTE: 如果修改系统时钟频率，也需要修改此处的时钟频率参数
+  uart_controller #(
+      .CLK_FREQ(10_000_000),
+      .BAUD    (115200)
+  ) uart_controller (
+      .clk_i(sys_clk),
+      .rst_i(sys_rst),
+
+      .wb_cyc_i(wbs2_cyc_o),
+      .wb_stb_i(wbs2_stb_o),
+      .wb_ack_o(wbs2_ack_i),
+      .wb_adr_i(wbs2_adr_o),
+      .wb_dat_i(wbs2_dat_o),
+      .wb_dat_o(wbs2_dat_i),
+      .wb_sel_i(wbs2_sel_o),
+      .wb_we_i (wbs2_we_o),
+
+      // to UART pins
+      .uart_txd_o(txd),
+      .uart_rxd_i(rxd)
+  );
+
+  /* =========== lab4 Slaves end =========== */
 
 endmodule

@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-module lab2_tb;
+module lab0_tb;
 
   wire clk_50M, clk_11M0592;
 
@@ -13,35 +13,6 @@ module lab2_tb;
   wire [7:0] dpy0;   // 数码管低位信号，包括小数点，输出 1 点亮
   wire [7:0] dpy1;   // 数码管高位信号，包括小数点，输出 1 点亮
 
-  // 实验 3 用到的指令格式
-  `define inst_rtype(rd, rs1, rs2, op) \
-    {7'b0, rs2, rs1, 3'b0, rd, op, 3'b001}
-
-  `define inst_itype(rd, imm, op) \
-    {imm, 4'b0, rd, op, 3'b010}
-  
-  `define inst_poke(rd, imm) `inst_itype(rd, imm, 4'b0001)
-  `define inst_peek(rd, imm) `inst_itype(rd, imm, 4'b0010)
-
-  // opcode table
-  typedef enum logic [3:0] {
-    ADD = 4'b0001,
-    SUB = 4'b0010,
-    AND = 4'b0011,
-    OR  = 4'b0100,
-    XOR = 4'b0101,
-    NOT = 4'b0110,
-    SLL = 4'b0111,
-    SRL = 4'b1000,
-    SRA = 4'b1001,
-    ROL = 4'b1010
-  } opcode_t;
-
-  logic is_rtype, is_itype, is_load, is_store, is_unknown;
-  logic [15:0] imm;
-  logic [4:0] rd, rs1, rs2;
-  logic [3:0] opcode;
-
   initial begin
     // 在这里可以自定义测试输入序列，例如：
     dip_sw = 32'h0;
@@ -53,28 +24,19 @@ module lab2_tb;
     reset_btn = 1;
     #100;
     reset_btn = 0;
-    #1000;  // 等待复位结束
-
-    // 样例：使用 POKE 指令为寄存器赋随机初值
-    for (int i = 1; i < 32; i = i + 1) begin
-      #100;
-      rd = i;   // only lower 5 bits
-      dip_sw = `inst_poke(rd, $urandom_range(0, 65536));
-      push_btn = 1;
-
-      #100;
-      push_btn = 0;
-
-      #1000;
+    
+    for (integer i = 0; i < 20; i = i + 1) begin
+      #100;  // 等待 100ns
+      push_btn = 1;  // 按下 push_btn 按钮
+      #100;  // 等待 100ns
+      push_btn = 0;  // 松开 push_btn 按钮
     end
-
-    // TODO: 随机测试各种指令
 
     #10000 $finish;
   end
 
   // 待测试用户设计
-  lab2_top dut (
+  lab0_top dut (
       .clk_50M(clk_50M),
       .clk_11M0592(clk_11M0592),
       .push_btn(push_btn),
