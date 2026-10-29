@@ -33,6 +33,7 @@ module sram_tester #(
 
   localparam RAM_ADDR_WIDTH = $clog2(ADDR_MASK); // ceil to correct bits
   localparam ADDR_ZEROS = ADDR_WIDTH - RAM_ADDR_WIDTH;
+  localparam RAM_WORD_ADDR_WIDTH = RAM_ADDR_WIDTH - 2;
 
   typedef enum logic [3:0] {
     ST_IDLE,
@@ -140,18 +141,18 @@ module sram_tester #(
     rng_enable = (state == ST_WRITE) || (state == ST_READ);
   end
 
-  // address prng
-  logic [RAM_ADDR_WIDTH-1:0] rng_addr;
+  // Generate SRAM word addresses directly to avoid byte-address aliases.
+  logic [RAM_WORD_ADDR_WIDTH-1:0] rng_word_addr;
   lfsr_prng #(
-      .DATA_WIDTH(RAM_ADDR_WIDTH),
+      .DATA_WIDTH(RAM_WORD_ADDR_WIDTH),
       .INVERT    (0)
   ) u_prng_addr (
       .clk (clk_i),
       .load(rng_load),
-      .seed(random_seed | 32'h1),
+      .seed(RAM_WORD_ADDR_WIDTH'(random_seed) | 1'b1),
 
       .enable  (rng_enable),
-      .data_out(rng_addr)
+      .data_out(rng_word_addr)
   );
 
   // data prng
@@ -168,6 +169,12 @@ module sram_tester #(
       .data_out(rng_data)
   );
 
+  wire mode = random_seed[0];
+  wire [1:0] access_offset = rng_data[7:6] ^ rng_word_addr[4:3] ^ count[1:0];
+  wire [ADDR_WIDTH-1:0] test_addr = mode ?
+      ADDR_BASE | {{ADDR_ZEROS{1'b0}}, rng_word_addr, access_offset} :
+      ADDR_BASE | {{ADDR_ZEROS{1'b0}}, access_offset, rng_word_addr};
+
   // address and data output
   always_comb begin
     wb_adr_o = '0;
@@ -176,12 +183,12 @@ module sram_tester #(
 
     case (state)
       ST_WRITE, ST_WRITE_ACTION: begin
-        wb_adr_o = ADDR_BASE | {{ADDR_ZEROS{1'b0}}, rng_addr};
+        wb_adr_o = test_addr;
         wb_dat_o = rng_data & data_mask;
       end
 
       ST_READ, ST_READ_ACTION: begin
-        wb_adr_o = ADDR_BASE | {{ADDR_ZEROS{1'b0}}, rng_addr};
+        wb_adr_o = test_addr;
         data_expected = rng_data & data_mask;
       end
 
@@ -209,12 +216,20 @@ module sram_tester #(
   end
 
   always_comb begin
-    case (wb_adr_o[1:0])
-      2'b00: wb_sel_o = 4'b1111;  // full word
-      2'b10: wb_sel_o = 4'b1100;  // half word
-      2'b01: wb_sel_o = 4'b0010;  // byte
-      2'b11: wb_sel_o = 4'b1000;  // byte
+    case (rng_data[3:1])
+      3'b000: wb_sel_o = 4'b1111;  // full word
+      3'b001: wb_sel_o = 4'b1000;  // byte
+      3'b010: wb_sel_o = 4'b1111;  // full word
+      3'b011: wb_sel_o = 4'b0011;  // half word
+      3'b100: wb_sel_o = 4'b0001;  // byte
+      3'b101: wb_sel_o = 4'b0100;  // byte
+      3'b110: wb_sel_o = 4'b1100;  // half word
+      3'b111: wb_sel_o = 4'b0010;  // byte
     endcase
+    if (!mode) begin
+      wb_sel_o = 4'b0000;
+      wb_sel_o[wb_adr_o[1:0]] = 1;
+    end
   end
 
   // status output
